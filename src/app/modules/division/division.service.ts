@@ -58,9 +58,17 @@ const updateDivision = async (id: string, payload: Partial<IDivision>) => {
     return updateDivision;
 }
 
+// delete division
+const deleteDivision = async (id: string) => {
+    await Division.findByIdAndDelete(id);
+
+    return null;
+}
+
 export const DivisionService = {
     createDivision,
     getAllDivisions,
     getSingleDivision,
-    updateDivision
+    updateDivision,
+    deleteDivision
 }

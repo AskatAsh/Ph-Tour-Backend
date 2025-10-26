@@ -11,5 +11,6 @@ router.post('/create', verifyUser(Role.ADMIN, Role.SUPER_ADMIN), validateRequest
 router.get('/', DivisionControllers.getAllDivisions);
 router.get('/:id', DivisionControllers.getSingleDivision);
 router.patch('/:id', verifyUser(Role.ADMIN, Role.SUPER_ADMIN), validateRequest(createDivisionZodSchema), DivisionControllers.updateDivision);
+router.delete('/:id', verifyUser(Role.ADMIN, Role.SUPER_ADMIN), DivisionControllers.deleteDivision);
 
 export const DivisionRoutes = router;

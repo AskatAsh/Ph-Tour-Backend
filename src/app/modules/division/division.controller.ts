@@ -54,9 +54,22 @@ const updateDivision = async (req: Request, res: Response, next: NextFunction) =
     });
 }
 
+// delete division
+const deleteDivision = async (req: Request, res: Response, next: NextFunction) => {
+    const result = await DivisionService.deleteDivision(req.params.id);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Division Deleted Successfully!",
+        data: result
+    });
+}
+
 export const DivisionControllers = {
     createDivision,
     getAllDivisions,
     getSingleDivision,
-    updateDivision
+    updateDivision,
+    deleteDivision
 }

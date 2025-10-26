@@ -29,7 +29,17 @@ const getAllDivisions = async () => {
     }
 }
 
+// get single division
+const getSingleDivision = async (slug: string) => {
+    const division = await Division.findOne({ _id: slug });
+
+    return {
+        data: division
+    }
+}
+
 export const DivisionService = {
     createDivision,
-    getAllDivisions
+    getAllDivisions,
+    getSingleDivision
 }

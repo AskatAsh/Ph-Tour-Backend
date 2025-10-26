@@ -24,13 +24,26 @@ const getAllDivisions = async (req: Request, res: Response, next: NextFunction) 
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
-        message: "Division Retrieved Successfully!",
+        message: "Divisions Retrieved Successfully!",
         data: result.data,
         meta: result.meta
     });
 }
 
+// get single division
+const getSingleDivision = async (req: Request, res: Response, next: NextFunction) => {
+    const result = await DivisionService.getSingleDivision(req.params.id);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Division Retrieved Successfully!",
+        data: result.data
+    });
+}
+
 export const DivisionControllers = {
     createDivision,
-    getAllDivisions
+    getAllDivisions,
+    getSingleDivision
 }

@@ -9,5 +9,6 @@ const router = Router();
 
 router.post('/create', verifyUser(Role.ADMIN, Role.SUPER_ADMIN), validateRequest(createDivisionZodSchema), DivisionControllers.createDivision);
 router.get('/', DivisionControllers.getAllDivisions);
+router.get('/:id', DivisionControllers.getSingleDivision);
 
 export const DivisionRoutes = router;

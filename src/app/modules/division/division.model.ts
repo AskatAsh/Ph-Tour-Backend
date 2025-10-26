@@ -13,7 +13,6 @@ const divisionSchema = new Schema<IDivision>({
         type: String,
         trim: true,
         minLength: 2,
-        required: true,
         unique: true
 
     },

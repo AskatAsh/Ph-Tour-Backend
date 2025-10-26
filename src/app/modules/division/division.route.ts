@@ -7,6 +7,7 @@ import { createDivisionZodSchema } from "./division.validation";
 
 const router = Router();
 
-router.post('/', verifyUser(Role.ADMIN, Role.SUPER_ADMIN), validateRequest(createDivisionZodSchema), DivisionControllers.createDivision);
+router.post('/create', verifyUser(Role.ADMIN, Role.SUPER_ADMIN), validateRequest(createDivisionZodSchema), DivisionControllers.createDivision);
+router.get('/', DivisionControllers.getAllDivisions);
 
 export const DivisionRoutes = router;

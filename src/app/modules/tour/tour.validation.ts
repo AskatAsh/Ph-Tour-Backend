@@ -1,0 +1,23 @@
+import z from "zod";
+
+export const createTourZodSchema = z.object({
+    title: z.string(),
+    description: z.string().optional(),
+    images: z.array(z.string()).optional(),
+    location: z.string().optional(),
+    costFrom: z.number().optional(),
+    startDate: z.coerce.date().optional(),
+    endDate: z.coerce.date().optional(),
+    included: z.array(z.string()).optional(),
+    excluded: z.array(z.string()).optional(),
+    amenities: z.array(z.string()).optional(),
+    tourPlan: z.array(z.string()).optional(),
+    maxGuest: z.number().optional(),
+    minAge: z.number().optional(),
+    tourType: z.string(),
+    division: z.string()
+});
+
+export const createTourTypeZodSchema = z.object({
+    name: z.string(),
+});

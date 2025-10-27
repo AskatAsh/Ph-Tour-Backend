@@ -18,5 +18,12 @@ router.post('/create-tour-type', verifyUser(Role.ADMIN, Role.SUPER_ADMIN), valid
 
 router.get('/tour-types', TourControllers.getAllTourType);
 
+router.patch(
+    "/tour-types/:id",
+    verifyUser(Role.ADMIN, Role.SUPER_ADMIN),
+    validateRequest(createTourTypeZodSchema),
+    TourControllers.updateTourType
+);
+
 
 export const TourRoutes = router;

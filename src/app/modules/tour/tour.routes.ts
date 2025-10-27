@@ -31,6 +31,8 @@ router.post('/create-tour-type', verifyUser(Role.ADMIN, Role.SUPER_ADMIN), valid
 
 router.get('/tour-types', TourControllers.getAllTourType);
 
+router.get('/tour-types/:id', TourControllers.getSingleTourType);
+
 router.patch(
     "/tour-types/:id",
     verifyUser(Role.ADMIN, Role.SUPER_ADMIN),

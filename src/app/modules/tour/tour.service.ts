@@ -30,6 +30,17 @@ const getAllTour = async () => {
     }
 }
 
+// update tour
+const updateTour = async (id: string, payload: ITour) => {
+    const existingTourType = await Tour.findById(id);
+    if (!existingTourType) {
+        throw new Error("Tour not found.");
+    }
+
+    const updatedTour = await Tour.findByIdAndUpdate(id, payload, { new: true });
+    return updatedTour;
+}
+
 
 // tour type services
 // create tour type
@@ -73,5 +84,6 @@ export const TourService = {
     getAllTour,
     createTourType,
     getAllTourType,
-    updateTourType
+    updateTourType,
+    updateTour
 }

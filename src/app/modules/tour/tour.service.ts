@@ -15,6 +15,9 @@ const createTour = async (payload: ITour) => {
     return tour;
 }
 
+
+// tour type services
+// create tour type
 const createTourType = async (payload: ITourType) => {
     const existTourType = await Tour.find({ name: payload.name });
     if (!existTourType) {
@@ -26,7 +29,21 @@ const createTourType = async (payload: ITourType) => {
     return tourType;
 }
 
+// get tour types
+const getAllTourType = async () => {
+    const tourTypes = await TourType.find({});
+    const totalTourTypes = await TourType.countDocuments();
+
+    return {
+        data: tourTypes,
+        meta: {
+            total: totalTourTypes
+        }
+    };
+}
+
 export const TourService = {
     createTour,
-    createTourType
+    createTourType,
+    getAllTourType
 }

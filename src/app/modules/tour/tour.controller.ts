@@ -15,6 +15,8 @@ const createTour = async (req: Request, res: Response, next: NextFunction) => {
     })
 }
 
+// tour type controllers
+// create tour type
 const createTourType = async (req: Request, res: Response, next: NextFunction) => {
     const tourType = await TourService.createTourType(req.body);
 
@@ -26,7 +28,21 @@ const createTourType = async (req: Request, res: Response, next: NextFunction) =
     })
 }
 
+// get all tour types
+const getAllTourType = async (req: Request, res: Response, next: NextFunction) => {
+    const tourTypes = await TourService.getAllTourType();
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Tour Types Retrieved Successfully!",
+        data: tourTypes.data,
+        meta: tourTypes.meta
+    })
+}
+
 export const TourControllers = {
     createTour,
-    createTourType
+    createTourType,
+    getAllTourType
 }

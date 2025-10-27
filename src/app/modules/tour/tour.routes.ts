@@ -11,6 +11,8 @@ const router = Router();
 // routes for tours
 router.post('/create', verifyUser(Role.ADMIN, Role.SUPER_ADMIN), validateRequest(createTourZodSchema), TourControllers.createTour);
 
+router.get('/', TourControllers.getAllTour);
+
 // routes for tour-type
 router.post('/create-tour-type', verifyUser(Role.ADMIN, Role.SUPER_ADMIN), validateRequest(createTourTypeZodSchema), TourControllers.createTourType);
 

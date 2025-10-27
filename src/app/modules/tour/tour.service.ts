@@ -3,6 +3,8 @@ import AppError from "../../errorHelpers/appError";
 import { ITour, ITourType } from "./tour.interface";
 import { Tour, TourType } from "./tour.model";
 
+// tour services
+// create tour
 const createTour = async (payload: ITour) => {
 
     const existTour = await Tour.find({ title: payload.title });
@@ -13,6 +15,19 @@ const createTour = async (payload: ITour) => {
     const tour = await Tour.create(payload);
 
     return tour;
+}
+
+// get all tour
+const getAllTour = async () => {
+    const tours = await Tour.find({});
+    const totalTours = await Tour.countDocuments();
+
+    return {
+        data: tours,
+        meta: {
+            total: totalTours
+        }
+    }
 }
 
 
@@ -44,6 +59,7 @@ const getAllTourType = async () => {
 
 export const TourService = {
     createTour,
+    getAllTour,
     createTourType,
     getAllTourType
 }

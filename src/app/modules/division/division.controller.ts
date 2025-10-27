@@ -32,7 +32,8 @@ const getAllDivisions = async (req: Request, res: Response, next: NextFunction) 
 
 // get single division
 const getSingleDivision = async (req: Request, res: Response, next: NextFunction) => {
-    const result = await DivisionService.getSingleDivision(req.params.slug);
+    const slug = req.params.slug;
+    const result = await DivisionService.getSingleDivision(slug);
 
     sendResponse(res, {
         success: true,

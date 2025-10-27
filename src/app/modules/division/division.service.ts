@@ -11,18 +11,6 @@ const createDivision = async (payload: IDivision) => {
         throw new AppError(httpStatus.BAD_REQUEST, "A division with this name already exists.");
     }
 
-    if (payload.name) {
-        const baseSlug = payload.name.toLowerCase().split(' ').join('-');
-        let slug = `${baseSlug}-division`;
-
-        let count = 0
-        while (await Division.exists({ slug })) {
-            slug = `${slug}-${count++}`;
-        }
-
-        payload.slug = slug;
-    }
-
     const division = await Division.create(payload);
 
     return division;

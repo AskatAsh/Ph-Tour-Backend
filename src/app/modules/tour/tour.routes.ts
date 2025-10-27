@@ -20,6 +20,12 @@ router.patch(
     TourControllers.updateTour
 );
 
+router.delete(
+    "/:id",
+    verifyUser(Role.ADMIN, Role.SUPER_ADMIN),
+    TourControllers.deleteTour
+);
+
 // routes for tour-type
 router.post('/create-tour-type', verifyUser(Role.ADMIN, Role.SUPER_ADMIN), validateRequest(createTourTypeZodSchema), TourControllers.createTourType);
 

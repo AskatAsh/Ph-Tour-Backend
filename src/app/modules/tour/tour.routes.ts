@@ -13,6 +13,8 @@ router.post('/create', verifyUser(Role.ADMIN, Role.SUPER_ADMIN), validateRequest
 
 router.get('/', TourControllers.getAllTour);
 
+router.get('/:slug', TourControllers.getSingleTour);
+
 router.patch(
     "/:id",
     verifyUser(Role.ADMIN, Role.SUPER_ADMIN),

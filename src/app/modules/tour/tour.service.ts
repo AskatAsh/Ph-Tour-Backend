@@ -30,6 +30,13 @@ const getAllTour = async () => {
     }
 }
 
+// get single tour
+const getSingleTour = async (slug: string) => {
+    const tour = await Tour.findOne({ slug });
+
+    return tour;
+}
+
 // update tour
 const updateTour = async (id: string, payload: ITour) => {
     const existingTourType = await Tour.findById(id);
@@ -62,7 +69,9 @@ const createTourType = async (payload: ITourType) => {
 
     const tourType = await TourType.create(payload);
 
-    return tourType;
+    return {
+        data: tourType
+    };
 }
 
 // get tour types
@@ -108,6 +117,7 @@ const deleteTourType = async (id: string) => {
 export const TourService = {
     createTour,
     getAllTour,
+    getSingleTour,
     updateTour,
     deleteTour,
     createTourType,

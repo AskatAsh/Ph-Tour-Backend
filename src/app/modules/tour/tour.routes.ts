@@ -32,5 +32,11 @@ router.patch(
     TourControllers.updateTourType
 );
 
+router.delete(
+    "/tour-types/:id",
+    verifyUser(Role.ADMIN, Role.SUPER_ADMIN),
+    TourControllers.deleteTourType
+);
+
 
 export const TourRoutes = router;

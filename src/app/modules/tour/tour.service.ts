@@ -23,9 +23,14 @@ const createTour = async (payload: ITour) => {
 const getAllTour = async (query: Record<string, string>) => {
     console.log("query:", query);
     const searchTerm = query?.searchTerm || "";
-    const sortBy = query?.sortBy || "-createdAt";
-    const fields = query?.fields.split(",").join(" ") || "";
 
+    const sortBy = query?.sortBy || "-createdAt";
+
+    const fields = query?.fields?.split(",").join(" ") || "";
+
+    const page = Number(query?.page || 1);
+    const limit = Number(query?.limit || 10);
+    const skip = (page - 1) * limit < 0 ? 0 : (page - 1) * limit;
 
     const filter = Object.fromEntries(
         Object.entries(query).filter(([key]) => !excludeFields.includes(key))
@@ -38,7 +43,7 @@ const getAllTour = async (query: Record<string, string>) => {
         $or: tourSearchableFields.map(field => ({ [field]: { $regex: searchTerm, $options: "i" } }))
     };
 
-    const tours = await Tour.find(filter).find(searchQuery).sort(sortBy).select(fields);
+    const tours = await Tour.find(filter).find(searchQuery).sort(sortBy).select(fields).skip(skip).limit(limit);
 
     const totalTours = await Tour.countDocuments();
 

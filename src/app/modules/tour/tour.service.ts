@@ -1,5 +1,7 @@
 import httpStatus from 'http-status-codes';
 import AppError from "../../errorHelpers/appError";
+import { excludeFields } from '../../utils/constants';
+import { tourSearchableFields } from './tour.constant';
 import { ITour, ITourType } from "./tour.interface";
 import { Tour, TourType } from "./tour.model";
 
@@ -18,8 +20,26 @@ const createTour = async (payload: ITour) => {
 }
 
 // get all tour
-const getAllTour = async () => {
-    const tours = await Tour.find({});
+const getAllTour = async (query: Record<string, string>) => {
+    console.log("query:", query);
+    const searchTerm = query?.searchTerm || "";
+    const sortBy = query?.sortBy || "-createdAt";
+    const fields = query?.fields.split(",").join(" ") || "";
+
+
+    const filter = Object.fromEntries(
+        Object.entries(query).filter(([key]) => !excludeFields.includes(key))
+    );
+
+    console.log("filter:", filter);
+
+
+    const searchQuery = {
+        $or: tourSearchableFields.map(field => ({ [field]: { $regex: searchTerm, $options: "i" } }))
+    };
+
+    const tours = await Tour.find(filter).find(searchQuery).sort(sortBy).select(fields);
+
     const totalTours = await Tour.countDocuments();
 
     return {

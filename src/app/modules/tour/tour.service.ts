@@ -1,4 +1,5 @@
 import httpStatus from 'http-status-codes';
+import { Query } from 'mongoose';
 import AppError from "../../errorHelpers/appError";
 import { excludeFields } from '../../utils/constants';
 import { tourSearchableFields } from './tour.constant';
@@ -19,39 +20,98 @@ const createTour = async (payload: ITour) => {
     return tour;
 }
 
+class QueryBuilder<T> {
+    public modelQuery: Query<T[], T>;
+    public readonly query: Record<string, string>;
+
+    constructor(modelQuery: Query<T[], T>, query: Record<string, string>) {
+        this.modelQuery = modelQuery;
+        this.query = query;
+    }
+
+    filter(): this {
+        const query = { ...this.query };
+
+        const filter = Object.fromEntries(
+            Object.entries(query).filter(([key]) => !excludeFields.includes(key))
+        );
+
+        this.modelQuery = this.modelQuery.find(filter);
+
+        return this;
+    }
+
+    search(searchableFields: string[]): this {
+        const searchTerm = this.query?.searchTerm || "";
+        const searchQuery = {
+            $or: searchableFields.map(field => ({ [field]: { $regex: searchTerm, $options: "i" } }))
+        };
+
+        this.modelQuery = this.modelQuery.find(searchQuery);
+
+        return this;
+    }
+
+    sort(): this {
+        const sortBy = this.query?.sortBy || "-createdAt";
+        this.modelQuery = this.modelQuery.sort(sortBy);
+
+        return this;
+    }
+    fields(): this {
+        const fields = this.query?.fields?.split(",").join(" ") || "";
+        this.modelQuery = this.modelQuery.select(fields);
+
+        return this;
+    }
+    paginate(): this {
+        const page = Number(this.query?.page || 1);
+        const limit = Number(this.query?.limit || 10);
+        const skip = (page - 1) * limit < 0 ? 0 : (page - 1) * limit;
+
+        this.modelQuery = this.modelQuery.skip(skip).limit(limit);
+
+        return this;
+    }
+    build() {
+        return this.modelQuery;
+    }
+    async getMeta() {
+        const totalDocuments = await this.modelQuery.model.countDocuments();
+        const page = Number(this.query?.page || 1);
+        const limit = Number(this.query?.limit || 10);
+
+        const totalPage = Math.ceil(totalDocuments / limit);
+
+        const meta = {
+            total: totalDocuments,
+            page: page,
+            limit: limit,
+            totalPage: totalPage
+        }
+        return meta;
+    }
+}
+
 // get all tour
 const getAllTour = async (query: Record<string, string>) => {
-    console.log("query:", query);
-    const searchTerm = query?.searchTerm || "";
+    const queryBuilder = new QueryBuilder(Tour.find(), query);
 
-    const sortBy = query?.sortBy || "-createdAt";
+    const tours = queryBuilder
+        .filter()
+        .search(tourSearchableFields)
+        .sort()
+        .fields()
+        .paginate();
 
-    const fields = query?.fields?.split(",").join(" ") || "";
-
-    const page = Number(query?.page || 1);
-    const limit = Number(query?.limit || 10);
-    const skip = (page - 1) * limit < 0 ? 0 : (page - 1) * limit;
-
-    const filter = Object.fromEntries(
-        Object.entries(query).filter(([key]) => !excludeFields.includes(key))
-    );
-
-    console.log("filter:", filter);
-
-
-    const searchQuery = {
-        $or: tourSearchableFields.map(field => ({ [field]: { $regex: searchTerm, $options: "i" } }))
-    };
-
-    const tours = await Tour.find(filter).find(searchQuery).sort(sortBy).select(fields).skip(skip).limit(limit);
-
-    const totalTours = await Tour.countDocuments();
+    const [data, meta] = await Promise.all([
+        tours.build(),
+        queryBuilder.getMeta()
+    ])
 
     return {
-        data: tours,
-        meta: {
-            total: totalTours
-        }
+        data,
+        meta
     }
 }
 

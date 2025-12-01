@@ -19,7 +19,8 @@ const createDivision = catchAsync(async (req: Request, res: Response) => {
 
 // get all division
 const getAllDivisions = catchAsync(async (req: Request, res: Response) => {
-    const result = await DivisionService.getAllDivisions();
+    const query = req.query;
+    const result = await DivisionService.getAllDivisions(query as Record<string, string>);
 
     sendResponse(res, {
         success: true,

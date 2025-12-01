@@ -36,13 +36,14 @@ const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunc
 
 // controller to get all users
 const getAllUsers = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const result = await UserServices.getAllUsers();
+    const query = req.query;
+    const result = await UserServices.getAllUsers(query as Record<string, string>);
 
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
         message: "All Users Retrieved Successfully!",
-        data: result.users,
+        data: result.data,
         meta: result.meta
     })
 })

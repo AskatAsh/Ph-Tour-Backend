@@ -8,26 +8,6 @@ import { createTourTypeZodSchema, createTourZodSchema, updateTourZodSchema } fro
 
 
 const router = Router();
-// routes for tours
-router.post('/create', verifyUser(Role.ADMIN, Role.SUPER_ADMIN), validateRequest(createTourZodSchema), TourControllers.createTour);
-
-router.get('/', TourControllers.getAllTour);
-
-router.get('/:slug', TourControllers.getSingleTour);
-
-router.patch(
-    "/:id",
-    verifyUser(Role.ADMIN, Role.SUPER_ADMIN),
-    validateRequest(updateTourZodSchema),
-    TourControllers.updateTour
-);
-
-router.delete(
-    "/:id",
-    verifyUser(Role.ADMIN, Role.SUPER_ADMIN),
-    TourControllers.deleteTour
-);
-
 // routes for tour-type
 router.post('/create-tour-type', verifyUser(Role.ADMIN, Role.SUPER_ADMIN), validateRequest(createTourTypeZodSchema), TourControllers.createTourType);
 
@@ -48,5 +28,24 @@ router.delete(
     TourControllers.deleteTourType
 );
 
+// routes for tours
+router.post('/create', verifyUser(Role.ADMIN, Role.SUPER_ADMIN), validateRequest(createTourZodSchema), TourControllers.createTour);
+
+router.get('/', TourControllers.getAllTour);
+
+router.get('/:slug', TourControllers.getSingleTour);
+
+router.patch(
+    "/:id",
+    verifyUser(Role.ADMIN, Role.SUPER_ADMIN),
+    validateRequest(updateTourZodSchema),
+    TourControllers.updateTour
+);
+
+router.delete(
+    "/:id",
+    verifyUser(Role.ADMIN, Role.SUPER_ADMIN),
+    TourControllers.deleteTour
+);
 
 export const TourRoutes = router;

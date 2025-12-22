@@ -83,8 +83,15 @@ const getAllBookings = async (query: Record<string, string>) => {
 }
 
 // service function to get user bookings
-const getUserBookings = async (query: Record<string, string>) => {
-    // get all
+const getUserBookings = async (userId: string) => {
+    const user = await User.findById(userId);
+    if (!user) {
+        throw new AppError(httpStatus.BAD_REQUEST, "This user does not exist.")
+    }
+
+    const userBookings = await Booking.find({ user: userId });
+
+    return userBookings;
 }
 
 // service function to get all single booking

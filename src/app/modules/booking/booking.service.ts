@@ -18,45 +18,60 @@ const getTransactionId = () => {
 const createBooking = async (payload: Partial<IBooking>, userId: string) => {
     const transactionId = getTransactionId();
 
-    // find and check if user phone or address exists
-    const user = await User.findById(userId);
-    if (!user?.phone || !user.address) {
-        throw new AppError(httpStatus.BAD_REQUEST, "User Phone and Address Required to Book A Tour.")
+    // start DB transaction
+    const session = await Booking.startSession();
+    session.startTransaction();
+
+    try {
+        // find and check if user phone or address exists
+        const user = await User.findById(userId);
+        if (!user?.phone || !user.address) {
+            throw new AppError(httpStatus.BAD_REQUEST, "User Phone and Address Required to Book A Tour.")
+        }
+
+        // find tour cost and check if cost exists
+        const tour = await Tour.findById(payload.tour).select("costFrom");
+        if (!tour?.costFrom) {
+            throw new AppError(httpStatus.BAD_GATEWAY, "No Tour Cost Found!")
+        }
+
+        // calculate tour cost amount
+        const amount = Number(tour.costFrom) * Number(payload.guestCount);
+
+        // create booking from payload, verified user and status
+        const booking = await Booking.create([{
+            ...payload,
+            user: userId,
+            status: BOOKNG_STATUS.PENDING
+        }], { session })
+
+        // create payment with booking
+        const payment = await Payment.create([{
+            booking: booking[0]._id,
+            transactionId: transactionId,
+            amount: amount,
+            status: PAYMENT_STATUS.UNPAID
+        }], { session })
+
+        // update booking with payment id
+        const updatedBooking = await Booking
+            .findByIdAndUpdate(
+                booking[0]._id,
+                { payment: payment[0]._id },
+                { new: true, runValidators: true, session }
+            ).populate("user", "name email phone address")
+            .populate("tour", "title costFrom")
+            .populate("payment");
+
+        await session.commitTransaction(); // transaction
+        session.endSession();
+        return updatedBooking;
+
+    } catch (error) {
+        await session.abortTransaction(); // rollback
+        session.endSession();
+        throw error;
     }
-
-    // create booking from payload, verified user and status
-    const booking = await Booking.create({
-        ...payload,
-        user: userId,
-        status: BOOKNG_STATUS.PENDING
-    })
-
-    // find tour cost and check if cost exists
-    const tour = await Tour.findById(booking.tour).select("costFrom");
-    if (!tour?.costFrom) {
-        throw new AppError(httpStatus.BAD_GATEWAY, "No Tour Cost Found!")
-    }
-
-    // calculate tour cost amount
-    const amount = Number(tour.costFrom) * Number(booking.guestCount);
-
-    // create payment with booking
-    const payment = await Payment.create({
-        booking: booking._id,
-        transactionId: transactionId,
-        amount: amount,
-        status: PAYMENT_STATUS.UNPAID
-    })
-
-    // update booking with payment id
-    const updatedBooking = await Booking
-        .findByIdAndUpdate(
-            booking._id,
-            { payment: payment._id },
-            { new: true, runValidators: true }
-        );
-
-    return updatedBooking;
 }
 
 // service function to get all bookings

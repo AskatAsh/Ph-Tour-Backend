@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import httpStatus from "http-status-codes";
-import { JwtPayload } from "jsonwebtoken";
 import AppError from "../../errorHelpers/appError";
 import { QueryBuilder } from "../../utils/QueryBuilder";
 import { PAYMENT_STATUS } from "../payment/payment.interface";
 import Payment from "../payment/payment.model";
+import { ISSLCommerz } from "../sslCommerz/sslCommerz.interface";
+import { SSLService } from "../sslCommerz/sslCommerz.service";
 import { Tour } from "../tour/tour.model";
 import User from "../user/user.model";
 import { bookingSearchableFields } from "./booking.constant";
@@ -63,9 +65,31 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
             .populate("tour", "title costFrom")
             .populate("payment");
 
+        // sslCommerz payment
+        const userName = (updatedBooking?.user as any).name;
+        const userEmail = (updatedBooking?.user as any).email;
+        const userPhone = (updatedBooking?.user as any).phone;
+        const userAddress = (updatedBooking?.user as any).address;
+
+        const sslPayload: ISSLCommerz = {
+            name: userName,
+            email: userEmail,
+            phoneNumber: userPhone,
+            address: userAddress,
+            amount: amount,
+            transactionId: transactionId
+        }
+
+        const sslPayment = await SSLService.sslPaymentInit(sslPayload);
+
+        console.log("ssl payment:", sslPayment);
+
         await session.commitTransaction(); // transaction
         session.endSession();
-        return updatedBooking;
+        return {
+            paymentUrl: sslPayment.GatewayPageURL,
+            updatedBooking
+        };
 
     } catch (error) {
         await session.abortTransaction(); // rollback
@@ -118,7 +142,7 @@ const getSingleBooking = async (bookingId: string) => {
 }
 
 // service function to update booking status
-const updateBookingStatus = async (bookingId: string, payload: Partial<IBooking>, decodedToken: JwtPayload) => {
+const updateBookingStatus = async () => {
     // update
 }
 

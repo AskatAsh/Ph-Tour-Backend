@@ -1,5 +1,5 @@
 import z from "zod";
-import { BOOKNG_STATUS } from "./booking.interface";
+import { BOOKING_STATUS } from "./booking.interface";
 
 export const createBookingZodSchema = z.object({
     tour: z.string(),
@@ -7,5 +7,5 @@ export const createBookingZodSchema = z.object({
 });
 
 export const updateBookingStatusZodSchema = z.object({
-    status: z.enum(Object.values(BOOKNG_STATUS))
+    status: z.enum(Object.values(BOOKING_STATUS))
 });

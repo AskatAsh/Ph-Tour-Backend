@@ -9,7 +9,7 @@ import { SSLService } from "../sslCommerz/sslCommerz.service";
 import { Tour } from "../tour/tour.model";
 import User from "../user/user.model";
 import { bookingSearchableFields } from "./booking.constant";
-import { BOOKNG_STATUS, IBooking } from "./booking.interface";
+import { BOOKING_STATUS, IBooking } from "./booking.interface";
 import Booking from "./booking.model";
 
 const getTransactionId = () => {
@@ -44,7 +44,7 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
         const booking = await Booking.create([{
             ...payload,
             user: userId,
-            status: BOOKNG_STATUS.PENDING
+            status: BOOKING_STATUS.PENDING
         }], { session })
 
         // create payment with booking

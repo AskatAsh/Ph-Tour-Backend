@@ -25,6 +25,7 @@ app.use(passport.session());
 
 // middleware to parse request body
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // middleware to parse cookies
 app.use(cookieParser());

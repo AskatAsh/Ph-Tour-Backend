@@ -42,6 +42,7 @@ router.get('/:slug', TourControllers.getSingleTour);
 router.patch(
     "/:id",
     verifyUser(Role.ADMIN, Role.SUPER_ADMIN),
+    multerUpload.array("files"),
     validateRequest(updateTourZodSchema),
     TourControllers.updateTour
 );

@@ -37,6 +37,7 @@ export const updateTourZodSchema = z.object({
     departureLocation: z.string().optional(),
     arrivalLocation: z.string().optional(),
     tourType: z.string().optional(),
+    deleteImages: z.array(z.string()).optional()
 });
 
 export const createTourTypeZodSchema = z.object({

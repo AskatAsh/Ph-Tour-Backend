@@ -15,7 +15,11 @@ router.post('/create',
     DivisionControllers.createDivision);
 router.get('/', DivisionControllers.getAllDivisions);
 router.get('/:slug', DivisionControllers.getSingleDivision);
-router.patch('/:id', verifyUser(Role.ADMIN, Role.SUPER_ADMIN), validateRequest(createDivisionZodSchema), DivisionControllers.updateDivision);
+router.patch('/:id',
+    verifyUser(Role.ADMIN, Role.SUPER_ADMIN),
+    multerUpload.single("file"),
+    validateRequest(createDivisionZodSchema),
+    DivisionControllers.updateDivision);
 router.delete('/:id', verifyUser(Role.ADMIN, Role.SUPER_ADMIN), DivisionControllers.deleteDivision);
 
 export const DivisionRoutes = router;

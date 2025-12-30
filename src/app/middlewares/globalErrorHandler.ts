@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextFunction, Request, Response } from "express";
 import httpStatus from 'http-status-codes';
+import { deleteImageFromCloudinary } from "../config/cloudinary.config";
 import { envVars } from "../config/env";
 import AppError from "../errorHelpers/appError";
 import { handleCastError } from "../helpers/handleCastError";
@@ -11,10 +12,20 @@ import { handleZodError } from "../helpers/handleZodError";
 import { IErrorSources } from "../interfaces/error.types";
 
 // global error handler
-export const globalErrorHandler = (error: any, req: Request, res: Response, next: NextFunction) => {
+export const globalErrorHandler = async (error: any, req: Request, res: Response, next: NextFunction) => {
 
     if (envVars.NODE_ENV === "development") {
         console.log(error);
+    }
+
+    if (req.file) {
+        await deleteImageFromCloudinary(req.file.path);
+    }
+
+    if (req.files && Array.isArray(req.files) && req.files.length) {
+        const imageUrls = (req.files as Express.Multer.File[]).map((file) => file.path);
+
+        Promise.all(imageUrls.map((url) => deleteImageFromCloudinary(url)));
     }
 
     let statusCode = httpStatus.INTERNAL_SERVER_ERROR;

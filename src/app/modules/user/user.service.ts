@@ -1,6 +1,7 @@
 import bcryptjs from "bcryptjs";
 import httpStatus from "http-status-codes";
 import { JwtPayload } from "jsonwebtoken";
+import { deleteImageFromCloudinary } from "../../config/cloudinary.config";
 import { envVars } from "../../config/env";
 import AppError from "../../errorHelpers/appError";
 import { QueryBuilder } from "../../utils/QueryBuilder";
@@ -68,6 +69,10 @@ const updateUser = async (userId: string, payload: Partial<IUser>, decodedToken:
     }
 
     const newUpdatedUser = await User.findByIdAndUpdate(userId, payload, { new: true, runValidators: true });
+
+    if (payload.profilePhoto && isUserExist.profilePhoto) {
+        await deleteImageFromCloudinary(isUserExist.profilePhoto);
+    }
 
     return newUpdatedUser;
 }

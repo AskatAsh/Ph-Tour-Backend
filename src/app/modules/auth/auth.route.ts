@@ -12,6 +12,7 @@ router.post('/logout', AuthControllers.logout);
 router.post('/refresh-token', AuthControllers.getNewAccessToken);
 router.post('/reset-password', verifyUser(...Object.values(Role)), AuthControllers.resetPassword);
 router.post('/set-password', verifyUser(...Object.values(Role)), AuthControllers.setPassword);
+router.post('/forgot-password', AuthControllers.forgotPassword);
 router.post('/change-password', verifyUser(...Object.values(Role)), AuthControllers.changePassword);
 router.get('/google', async (req: Request, res: Response, next: NextFunction) => {
     const redirect = req.query.redirect || '/';

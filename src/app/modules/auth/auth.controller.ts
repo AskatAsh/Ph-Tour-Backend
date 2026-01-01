@@ -88,21 +88,6 @@ const logout = catchAsync(async (req: Request, res: Response, next: NextFunction
     })
 })
 
-const resetPassword = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const decodedToken = req.user;
-    const { oldPassword, newPassword } = req.body;
-
-    await AuthServices.resetPassword(oldPassword, newPassword, decodedToken as JwtPayload);
-
-
-    sendResponse(res, {
-        success: true,
-        statusCode: httpStatus.OK,
-        message: "Password Changed Successfully!",
-        data: null,
-    })
-})
-
 const setPassword = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const decodedToken = req.user as JwtPayload;
     const { password } = req.body;
@@ -118,11 +103,38 @@ const setPassword = catchAsync(async (req: Request, res: Response, next: NextFun
     })
 })
 
+const forgotPassword = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const { email } = req.body;
+
+    await AuthServices.forgotPassword(email);
+
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Email Sent Successfully!",
+        data: null,
+    })
+})
+
+const resetPassword = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const decodedToken = req.user;
+
+    await AuthServices.resetPassword(req.body, decodedToken as JwtPayload);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Password Changed Successfully!",
+        data: null,
+    })
+})
+
 const changePassword = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const decodedToken = req.user;
     const { oldPassword, newPassword } = req.body;
 
-    await AuthServices.resetPassword(oldPassword, newPassword, decodedToken as JwtPayload);
+    await AuthServices.changePassword(oldPassword, newPassword, decodedToken as JwtPayload);
 
 
     sendResponse(res, {
@@ -158,8 +170,9 @@ export const AuthControllers = {
     credentialsLogin,
     getNewAccessToken,
     logout,
-    resetPassword,
     setPassword,
+    forgotPassword,
+    resetPassword,
     changePassword,
     googleCallback
 }

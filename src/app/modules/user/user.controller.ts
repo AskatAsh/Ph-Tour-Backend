@@ -4,11 +4,17 @@ import httpStatus from "http-status-codes";
 import { JwtPayload } from "jsonwebtoken";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
+import { IUser } from "./user.interface";
 import { UserServices } from "./user.service";
 
 // controller to create user
 const createUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const user = await UserServices.createUser(req.body);
+    const payload: IUser = {
+        ...req.body,
+        profilePhoto: req.file?.path
+    }
+
+    const user = await UserServices.createUser(payload);
 
     sendResponse(res, {
         success: true,
@@ -21,8 +27,12 @@ const createUser = catchAsync(async (req: Request, res: Response, next: NextFunc
 // controller to update user
 const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.params.id;
-    const payload = req.body;
     const verifiedToken = req.user;
+
+    const payload: IUser = {
+        ...req.body,
+        profilePhoto: req.file?.path
+    }
 
     const updatedUser = await UserServices.updateUser(userId, payload, verifiedToken as JwtPayload);
 
@@ -36,13 +46,14 @@ const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunc
 
 // controller to get all users
 const getAllUsers = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const result = await UserServices.getAllUsers();
+    const query = req.query;
+    const result = await UserServices.getAllUsers(query as Record<string, string>);
 
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
         message: "All Users Retrieved Successfully!",
-        data: result.users,
+        data: result.data,
         meta: result.meta
     })
 })

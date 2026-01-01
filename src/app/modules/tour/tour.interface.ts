@@ -6,7 +6,7 @@ export interface ITourType {
 
 export interface ITour {
     title: string;
-    slug: string;
+    slug?: string;
     description?: string;
     images?: string[];
     location?: string;
@@ -19,6 +19,9 @@ export interface ITour {
     tourPlan?: string[];
     maxGuest?: number;
     minAge?: number;
+    departureLocation?: string,
+    arrivalLocation?: string,
     tourType: Types.ObjectId;
     division: Types.ObjectId;
+    deleteImages: string[];
 }

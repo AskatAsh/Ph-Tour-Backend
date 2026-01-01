@@ -4,7 +4,7 @@ import { JwtPayload } from 'jsonwebtoken';
 import { envVars } from '../../config/env';
 import AppError from "../../errorHelpers/appError";
 import { createNewAccessToken, getAuthTokens } from '../../utils/getAuthTokens';
-import { IUser } from "../user/user.interface";
+import { AuthProvider, IAuthProvider, IUser } from "../user/user.interface";
 import User from "../user/user.model";
 
 // login user using credentials and generate tokens -> now done by passport
@@ -67,8 +67,63 @@ const resetPassword = async (oldPassword: string, newPassword: string, decodedTo
     await user.save();
 };
 
+// set new password
+const setPassword = async (userId: string, plainPassword: string) => {
+
+    const user = await User.findById(userId).select("+password");
+
+    if (!user) {
+        throw new AppError(httpStatus.NOT_FOUND, "User not found.");
+    }
+
+    if (user.password && user.auths.some(providerObject => providerObject.provider === "GOOGLE")) {
+        throw new AppError(httpStatus.BAD_REQUEST, "You have already set your password. Change it from profile password update.")
+    }
+
+
+    const salt = await bcryptjs.genSalt(envVars.BCRYPT_SALT_ROUND);
+    const hashedPassword = await bcryptjs.hash(plainPassword, salt);
+
+    const credentialProvider: IAuthProvider = {
+        provider: AuthProvider.CREDENTIAL,
+        providerId: user.email
+    }
+
+    const auths: IAuthProvider[] = [...user.auths, credentialProvider];
+
+    user.password = hashedPassword;
+
+    user.auths = auths;
+
+    await user.save();
+};
+
+// change password
+const changePassword = async (oldPassword: string, newPassword: string, decodedToken: JwtPayload) => {
+
+    const user = await User.findById(decodedToken.userId).select("+password");
+
+    if (!user) {
+        throw new AppError(httpStatus.NOT_FOUND, "User not found.");
+    }
+
+    const isPasswordMatched = await bcryptjs.compare(oldPassword, user?.password as string);
+
+    if (!isPasswordMatched) {
+        throw new AppError(httpStatus.BAD_REQUEST, "Old Password Does Not Match.");
+    }
+
+    const salt = await bcryptjs.genSalt(envVars.BCRYPT_SALT_ROUND);
+
+    user.password = await bcryptjs.hash(newPassword, salt);
+
+    await user.save();
+};
+
 export const AuthServices = {
     credentialsLogin,
     getNewAccessToken,
-    resetPassword
+    resetPassword,
+    setPassword,
+    changePassword
 }

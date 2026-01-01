@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import httpStatus from "http-status-codes";
 import AppError from "../../errorHelpers/appError";
+import { getTransactionId } from "../../utils/getTransactionId";
 import { QueryBuilder } from "../../utils/QueryBuilder";
 import { PAYMENT_STATUS } from "../payment/payment.interface";
 import Payment from "../payment/payment.model";
@@ -12,9 +13,7 @@ import { bookingSearchableFields } from "./booking.constant";
 import { BOOKING_STATUS, IBooking } from "./booking.interface";
 import Booking from "./booking.model";
 
-const getTransactionId = () => {
-    return `tran_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
-}
+
 
 // service function to create booking
 const createBooking = async (payload: Partial<IBooking>, userId: string) => {

@@ -110,7 +110,7 @@ const forgotPassword = async (email: string) => {
     sendMail({
         to: isUserExist.email,
         subject: "Reset Password",
-        templateName: 'forgetPassword.ejs',
+        templateName: 'forgetPassword',
         templateData: {
             name: isUserExist.name,
             resetPasswordLink

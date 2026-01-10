@@ -1,10 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import httpStatus from 'http-status-codes';
+import { uploadBufferToCloudinary } from '../../config/cloudinary.config';
 import AppError from "../../errorHelpers/appError";
+import { generatePdf, IInvoiceData } from '../../utils/invoice';
+import { sendMail } from '../../utils/sendEmail';
 import { BOOKING_STATUS } from "../booking/booking.interface";
 import Booking from "../booking/booking.model";
 import { ISSLCommerz } from "../sslCommerz/sslCommerz.interface";
 import { SSLService } from "../sslCommerz/sslCommerz.service";
+import { ITour } from '../tour/tour.interface';
+import { IUser } from '../user/user.interface';
 import { PAYMENT_STATUS } from "./payment.interface";
 import Payment from "./payment.model";
 
@@ -46,17 +51,55 @@ const successPayment = async (query: Record<string, string>) => {
 
     try {
         // updated payment status
-        const updatePayment = await Payment.findOneAndUpdate({ transactionId: query.transactionId }, {
+        const updatedPayment = await Payment.findOneAndUpdate({ transactionId: query.transactionId }, {
             status: PAYMENT_STATUS.PAID
         }, { runValidators: true, session: session })
 
+        if (!updatedPayment) {
+            throw new AppError(httpStatus.NOT_FOUND, "Payment not found")
+        }
+
         // update booking status
-        await Booking
+        const updatedBooking = await Booking
             .findByIdAndUpdate(
-                updatePayment?.booking,
+                updatedPayment?.booking,
                 { status: BOOKING_STATUS.COMPLETE },
-                { runValidators: true, session }
-            );
+                { new: true, runValidators: true, session }
+            ).populate("tour", "title")
+            .populate("user", "name email");
+
+        if (!updatedBooking) {
+            throw new AppError(httpStatus.NOT_FOUND, "Booking not found")
+        }
+
+        // generate invoice pdf and send to email
+        const invoiceData: IInvoiceData = {
+            bookingDate: updatedBooking.createdAt as Date,
+            guestCount: updatedBooking.guestCount,
+            totalAmount: updatedPayment?.amount as number,
+            tourTitle: (updatedBooking.tour as unknown as ITour).title,
+            transactionId: updatedPayment.transactionId,
+            userName: (updatedBooking.user as unknown as IUser).name
+        }
+        const pdfBuffer = await generatePdf(invoiceData);
+
+        const cloudinaryResult = await uploadBufferToCloudinary(pdfBuffer, "Invoice");
+
+        await Payment.findByIdAndUpdate(updatedPayment._id, { invoiceUrl: cloudinaryResult?.secure_url }, { runValidators: true, session });
+
+        await sendMail({
+            to: (updatedBooking.user as unknown as IUser).email,
+            subject: "Your Booking Invoice",
+            templateName: "invoice",
+            templateData: invoiceData,
+            attachments: [
+                {
+                    content: pdfBuffer,
+                    contentType: 'application/pdf',
+                    fileName: 'invoice.pdf'
+                }
+            ]
+        })
 
         await session.commitTransaction(); // transaction
         session.endSession();

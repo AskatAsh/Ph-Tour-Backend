@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import httpStatus from 'http-status-codes';
+import { JwtPayload } from 'jsonwebtoken';
 import { uploadBufferToCloudinary } from '../../config/cloudinary.config';
 import AppError from "../../errorHelpers/appError";
 import { generatePdf, IInvoiceData } from '../../utils/invoice';
@@ -184,15 +185,26 @@ const cancelPayment = async (query: Record<string, string>) => {
     }
 };
 
-const getInvoiceDownloadUrl = async (paymentId: string) => {
-    const payment = await Payment.findById(paymentId).select("invoiceUrl");
+const getInvoiceDownloadUrl = async (paymentId: string, decodedToken: JwtPayload) => {
+    const payment = await Payment.findById(paymentId).select("invoiceUrl booking");
+
 
     if (!payment) {
-        throw new AppError(401, "Payment not found")
+        throw new AppError(httpStatus.NOT_FOUND, "Payment not found");
+    }
+
+    const booking = await Booking.findById(payment.booking).select("user");
+
+    if (!booking) {
+        throw new AppError(httpStatus.NOT_FOUND, "Booking not found");
+    }
+
+    if (booking.user.toString() !== decodedToken.userId) {
+        throw new AppError(httpStatus.UNAUTHORIZED, "User does not match");
     }
 
     if (!payment.invoiceUrl) {
-        throw new AppError(401, "No invoice found")
+        throw new AppError(httpStatus.NOT_FOUND, "No invoice found");
     }
 
     return payment.invoiceUrl;

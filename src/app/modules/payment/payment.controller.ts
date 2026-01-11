@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import httpStatus from "http-status-codes";
+import { JwtPayload } from "jsonwebtoken";
 import { envVars } from "../../config/env";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
@@ -50,7 +51,8 @@ const cancelPayment = catchAsync(async (req: Request, res: Response) => {
 
 const getInvoiceDownloadUrl = catchAsync(async (req: Request, res: Response) => {
     const { paymentId } = req.params;
-    const result = await PaymentService.getInvoiceDownloadUrl(paymentId);
+    const decodedToken = req.user as JwtPayload;
+    const result = await PaymentService.getInvoiceDownloadUrl(paymentId, decodedToken);
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,

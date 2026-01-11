@@ -31,7 +31,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // middleware for cross origin resource sharing
-app.use(cors());
+app.use(cors({
+    origin: envVars.FRONTEND_URL,
+    credentials: true
+}));
 
 // middleware for routes
 app.use('/api/v1/', router);

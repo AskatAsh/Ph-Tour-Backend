@@ -3,7 +3,7 @@ import bcryptjs from 'bcryptjs';
 import passport from "passport";
 import { Strategy as GoogleStrategy, Profile, VerifyCallback } from "passport-google-oauth20";
 import { IVerifyOptions, Strategy as LocalStrategy } from "passport-local";
-import { AuthProvider, Role } from "../modules/user/user.interface";
+import { AuthProvider, Role, Status } from "../modules/user/user.interface";
 import User from "../modules/user/user.model";
 import { envVars } from './env';
 
@@ -17,6 +17,15 @@ passport.use(new LocalStrategy({
 
     if (!isUserExist) {
       return done(null, false, { message: "No User Found." });
+    }
+    if (!isUserExist.isVerified) {
+      return done("This User is Not Verified.");
+    }
+    if (isUserExist.status === Status.BLOCKED || isUserExist.status === Status.INACTIVE) {
+      return done(`This User is ${isUserExist.status}.`);
+    }
+    if (isUserExist.isDeleted) {
+      return done("This User Does Not Exist.");
     }
 
     const isGoogleAuthenticated = isUserExist.auths?.some((providerObject) => providerObject.provider === AuthProvider.GOOGLE);
@@ -64,6 +73,15 @@ passport.use(new GoogleStrategy({
           role: Role.USER,
           auths: [{ provider: AuthProvider.GOOGLE, providerId: profile.id }],
         })
+      }
+      if (!user.isVerified) {
+        return done(null, false, { message: "This User is Not Verified." });
+      }
+      if (user.status === Status.BLOCKED || user.status === Status.INACTIVE) {
+        return done(null, false, { message: `This User is ${user.status}.` });
+      }
+      if (user.isDeleted) {
+        return done(null, false, { message: "This User Does Not Exist." });
       }
 
       return done(null, user);

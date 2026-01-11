@@ -23,6 +23,9 @@ export const verifyUser = (...userRoles: (keyof typeof Role)[]) => async (req: R
         if (!isUserExist) {
             throw new AppError(httpStatus.BAD_REQUEST, "This User Does Not Exist.");
         }
+        if (!isUserExist.isVerified) {
+            throw new AppError(httpStatus.BAD_REQUEST, "This User is Not Verified.");
+        }
         if (isUserExist.status === Status.BLOCKED || isUserExist.status === Status.INACTIVE) {
             throw new AppError(httpStatus.BAD_REQUEST, `This User is ${isUserExist.status}.`);
         }

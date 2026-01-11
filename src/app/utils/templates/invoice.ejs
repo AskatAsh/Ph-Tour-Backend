@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Invoice</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #f9fafb;
+            color: #111827;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Invoice for Your Booking</h1>
+
+    <p>Hello <strong>
+            <%= userName %>
+        </strong>,</p>
+
+    <p><strong>Tour:</strong>
+        <%= tourTitle %>
+    </p>
+    <p><strong>Booking Date:</strong>
+        <%= bookingDate.toDateString() %>
+    </p>
+    <p><strong>Guests:</strong>
+        <%= guestCount %>
+    </p>
+    <p><strong>Transaction ID:</strong>
+        <%= transactionId %>
+    </p>
+
+    <p>
+        <strong>Total Paid:</strong>
+        ৳ <%= totalAmount.toFixed(2) %>
+    </p>
+
+    <p>Thank you for your booking!</p>
+</body>
+
+</html>

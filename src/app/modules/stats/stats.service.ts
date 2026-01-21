@@ -1,4 +1,6 @@
 import Booking from "../booking/booking.model";
+import { PAYMENT_STATUS } from "../payment/payment.interface";
+import Payment from "../payment/payment.model";
 import { Tour } from "../tour/tour.model";
 import { Status } from "../user/user.interface";
 import User from "../user/user.model";
@@ -265,7 +267,53 @@ const getBookingStats = async () => {
 }
 
 const getPaymentStats = async () => {
-    // get payment stats
+    const totalPaymentsPromise = Payment.countDocuments();
+
+    const totalPaymentByStatusPromise = Payment.aggregate([
+        {
+            $group: { _id: "$status", count: { $sum: 1 } }
+        }
+    ]);
+
+    const totalRevenuePromise = Payment.aggregate([
+        {
+            $match: { status: PAYMENT_STATUS.PAID }
+        },
+        {
+            $group: { _id: null, totalRevenue: { $sum: "$amount" } }
+        }
+    ]);
+
+    const avgPaymentAmountPromise = Payment.aggregate([
+        {
+            $group: { _id: null, avgPaymentAmount: { $avg: "$amount" } }
+        }
+    ]);
+
+    const paymentGatewayDataPromise = Payment.aggregate([
+        {
+            $group: {
+                _id: { $ifNull: ["$paymentGatewayData.status", "UNKNOWN"] },
+                count: { $sum: 1 }
+            }
+        }
+    ])
+
+    const [totalPayments, totalPaymentByStatus, totalRevenue, avgPaymentAmount, paymentGatewayData] = await Promise.all([
+        totalPaymentsPromise,
+        totalPaymentByStatusPromise,
+        totalRevenuePromise,
+        avgPaymentAmountPromise,
+        paymentGatewayDataPromise
+    ]);
+
+    return {
+        totalPayments,
+        totalPaymentByStatus,
+        totalRevenue,
+        avgPaymentAmount,
+        paymentGatewayData
+    }
 }
 
 export const StatsService = {

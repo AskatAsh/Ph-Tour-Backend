@@ -42,7 +42,7 @@ app.use('/api/v1/', router);
 // root get api
 app.get('/', (req: Request, res: Response) => {
     res.status(200).json({
-        message: "Authentication server is running..."
+        message: "PH Tour server is running..."
     })
 })
 

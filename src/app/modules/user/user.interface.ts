@@ -49,4 +49,7 @@ export interface IUser {
     // References
     referenceCollectionOne?: Types.ObjectId[];
     referenceCollectionTwo?: Types.ObjectId[];
+
+    createdAt?: Date;
+    updatedAt?: Date;
 }

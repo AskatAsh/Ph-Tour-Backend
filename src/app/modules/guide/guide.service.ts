@@ -95,7 +95,7 @@ const approveGuideApplication = async (status: GuideApplicationStatus, guideAppl
     }
 }
 
-const getAppliedGuides = async (query: Record<string, string>) => {
+const getAllGuideApplication = async (query: Record<string, string>) => {
 
     const {
         searchTerm,
@@ -231,8 +231,24 @@ const getAppliedGuides = async (query: Record<string, string>) => {
     }
 }
 
+const getSingleGuideApplication = async (id: string) => {
+    try {
+        if (!Types.ObjectId.isValid(id)) {
+            throw new AppError(httpStatus.BAD_REQUEST, "Invalid guide application id");
+        }
+
+        const result = await GuideApplication.findById(id);
+
+        return result;
+    } catch (error: any) {
+        console.error(`Error fetching guide application: ${error.message}`);
+        throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, "Failed to fetch guide application");
+    }
+}
+
 export const GuideServices = {
     applyAsGuide,
     approveGuideApplication,
-    getAppliedGuides
+    getAllGuideApplication,
+    getSingleGuideApplication
 };

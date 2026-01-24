@@ -13,7 +13,7 @@ router.post("/apply", verifyUser(Role.USER), multerUpload.single("file"), valida
 // api/v1/guide/approve/:id
 router.post("/approve/:id", verifyUser(Role.ADMIN, Role.SUPER_ADMIN), validateRequest(approveGuideZodSchema), GuideControllers.approveGuideApplication);
 // api/v1/guide/:id
-router.get("/:id", verifyUser(Role.ADMIN, Role.SUPER_ADMIN), GuideControllers.getSingleGuide); // optional
+router.get("/:id", verifyUser(Role.ADMIN, Role.SUPER_ADMIN), GuideControllers.getSingleGuideApplication); // optional
 // api/v1/guide
 router.get("/", verifyUser(Role.ADMIN, Role.SUPER_ADMIN), GuideControllers.getAppliedGuides);
 

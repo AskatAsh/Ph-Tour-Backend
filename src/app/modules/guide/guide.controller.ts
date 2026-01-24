@@ -27,13 +27,20 @@ const applyAsGuide = catchAsync(async (req: Request, res: Response, next: NextFu
 });
 
 const approveGuideApplication = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const payload = req.body;
+    const { status } = req.body;
+    const id = req.params.id;
+
+    console.log("status and id:", status, id);
+
+    const updatedApplication = await GuideServices.approveGuideApplication(status, id);
+
+    console.log("updated application:", updatedApplication);
 
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
         message: "Guide Application Updated Successfully",
-        data: null
+        data: updatedApplication
     });
 });
 

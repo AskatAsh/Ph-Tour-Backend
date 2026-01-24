@@ -15,6 +15,6 @@ router.post("/approve/:id", verifyUser(Role.ADMIN, Role.SUPER_ADMIN), validateRe
 // api/v1/guide/:id
 router.get("/:id", verifyUser(Role.ADMIN, Role.SUPER_ADMIN), GuideControllers.getSingleGuide); // optional
 // api/v1/guide
-router.get("/", verifyUser(Role.ADMIN, Role.SUPER_ADMIN), GuideControllers.getGuides);
+router.get("/", verifyUser(Role.ADMIN, Role.SUPER_ADMIN), GuideControllers.getAppliedGuides);
 
 export const GuideRoutes = router;

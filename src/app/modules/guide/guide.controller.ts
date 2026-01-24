@@ -30,11 +30,7 @@ const approveGuideApplication = catchAsync(async (req: Request, res: Response, n
     const { status } = req.body;
     const id = req.params.id;
 
-    console.log("status and id:", status, id);
-
     const updatedApplication = await GuideServices.approveGuideApplication(status, id);
-
-    console.log("updated application:", updatedApplication);
 
     sendResponse(res, {
         success: true,
@@ -44,13 +40,16 @@ const approveGuideApplication = catchAsync(async (req: Request, res: Response, n
     });
 });
 
-const getGuides = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+const getAppliedGuides = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const query = req.query;
+    const appliedGuides = await GuideServices.getAppliedGuides(query as Record<string, string>);
 
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
         message: "Guides Retrieved Successfully",
-        data: null
+        data: appliedGuides.data,
+        meta: appliedGuides.meta
     });
 });
 
@@ -67,6 +66,6 @@ const getSingleGuide = catchAsync(async (req: Request, res: Response, next: Next
 export const GuideControllers = {
     applyAsGuide,
     approveGuideApplication,
-    getGuides,
+    getAppliedGuides,
     getSingleGuide
 }

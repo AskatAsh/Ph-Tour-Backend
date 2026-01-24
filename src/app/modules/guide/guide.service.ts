@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import httpStatus from "http-status-codes";
+import { Types } from "mongoose";
 import AppError from "../../errorHelpers/appError";
 import { Role } from "../user/user.interface";
 import User from "../user/user.model";
@@ -94,8 +95,144 @@ const approveGuideApplication = async (status: GuideApplicationStatus, guideAppl
     }
 }
 
+const getAppliedGuides = async (query: Record<string, string>) => {
+
+    const {
+        searchTerm,
+        status,
+        division,
+        user,
+        page = "1",
+        limit = "10",
+        sortBy = "-createdAt"
+    } = query;
+
+    const pageNumber = Math.max(Number(page || 1), 1);
+    const limitNumber = Math.max(Number(limit || 1), 1);
+    const skip = Math.max((pageNumber - 1) * limitNumber, 0);
+
+    const pipeline: any[] = [];
+
+    // filter by status
+    if (status) {
+        pipeline.push({ $match: { status } });
+    }
+
+    // filter by user
+    if (user) {
+        pipeline.push({ $match: { user: new Types.ObjectId(user) } });
+    }
+
+    // filter by division
+    if (division) {
+        pipeline.push({ $match: { division: new Types.ObjectId(division) } });
+    }
+
+    // lookup user
+    pipeline.push({
+        $lookup: {
+            from: "users",
+            let: { userId: "$user" },
+            pipeline: [
+                {
+                    $match: { $expr: { $eq: ["$_id", "$$userId"] } }
+                },
+                {
+                    $project: {
+                        "_id": 1,
+                        "name": 1,
+                        "email": 1,
+                        "phone": 1,
+                        "address": 1
+                    }
+                }
+            ],
+            as: "user",
+        }
+    });
+
+    // unwind user
+    pipeline.push({ $unwind: "$user" });
+
+    // lookup division
+    pipeline.push({
+        $lookup: {
+            from: "divisions",
+            let: { divisionId: "$division" },
+            pipeline: [
+                {
+                    $match: { $expr: { $eq: ["$_id", "$$divisionId"] } }
+                },
+                {
+                    $project: {
+                        "_id": 1,
+                        "name": 1,
+                        "slug": 1
+                    }
+                }
+            ],
+            as: "division",
+        }
+    });
+
+    // unwind division
+    pipeline.push({ $unwind: "$division" });
+
+    // search joined fields
+    if (searchTerm) {
+        pipeline.push({
+            $match: {
+                $or: [
+                    { "user.name": { $regex: searchTerm, $options: "i" } },
+                    { "user.email": { $regex: searchTerm, $options: "i" } },
+                    { "user.phone": { $regex: searchTerm, $options: "i" } },
+                    { "user.address": { $regex: searchTerm, $options: "i" } },
+                    { "division.name": { $regex: searchTerm, $options: "i" } }
+                ]
+            }
+        });
+    }
+
+    // sorting
+    pipeline.push({
+        $sort: sortBy.startsWith("-") ? {
+            [sortBy.substring(1)]: -1
+        } : {
+            [sortBy]: 1
+        }
+    })
+
+    // pagination and meta
+    pipeline.push({
+        $facet: {
+            data: [
+                { $skip: skip },
+                { $limit: limitNumber }
+            ],
+            meta: [
+                { $count: "total" }
+            ]
+        }
+    });
+
+    const result = await GuideApplication.aggregate(pipeline);
+
+    const data = result[0].data;
+    const total = result[0].meta[0]?.total || 0;
+
+    return {
+        data,
+        meta: {
+            total: total,
+            page: pageNumber,
+            limit: limitNumber,
+            totalPage: Math.ceil(total / limitNumber)
+        }
+    }
+}
 
 export const GuideServices = {
     applyAsGuide,
-    approveGuideApplication
+    approveGuideApplication,
+    getAppliedGuides
 };

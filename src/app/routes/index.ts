@@ -2,6 +2,7 @@ import { Router } from "express";
 import { AuthRoutes } from "../modules/auth/auth.route";
 import { BookingRoutes } from "../modules/booking/booking.route";
 import { DivisionRoutes } from "../modules/division/division.route";
+import { GuideRoutes } from "../modules/guide/guide.route";
 import { OtpRoutes } from "../modules/otp/otp.route";
 import { PaymentRoutes } from "../modules/payment/payment.route";
 import { StatsRoutes } from "../modules/stats/stats.route";
@@ -43,6 +44,10 @@ const moduleRoutes = [
     {
         path: '/stats',
         route: StatsRoutes
+    },
+    {
+        path: '/guide',
+        route: GuideRoutes
     }
 ]
 

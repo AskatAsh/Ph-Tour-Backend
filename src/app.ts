@@ -28,6 +28,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // middleware to parse cookies
+app.set("trust proxy", 1);
 app.use(cookieParser());
 
 // middleware for cross origin resource sharing

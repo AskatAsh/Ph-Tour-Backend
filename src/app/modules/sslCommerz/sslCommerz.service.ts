@@ -59,18 +59,26 @@ const sslPaymentInit = async (payload: ISSLCommerz) => {
     }
 }
 
-const validatePayment = async (payload: any) => {
+const validatePayment = async (val_id: string) => {
     try {
         const response = await axios({
             method: "GET",
-            url: `${envVars.SSL.SSL_VALIDATION_API}?val_id=${payload.val_id}&store_id=${envVars.SSL.SSL_STORE_ID}&store_passwd=${envVars.SSL.SSL_STORE_PASS}`
+            url: `${envVars.SSL.SSL_VALIDATION_API}?val_id=${val_id}&Store_Id=${envVars.SSL.SSL_STORE_ID}&Store_Passwd=${envVars.SSL.SSL_STORE_PASS}`
         })
 
-        console.log("sslcommerz validation response data:", response.data);
+        const data = response.data;
 
+        console.log("sslcommerz validation response data:", data);
+
+        // must be VALID or VALIDATED
+        if (!["VALID", "VALIDATED"].includes(data.status)) {
+            throw new Error(`Payment not valid: ${data.status}`);
+        }
+
+        // update payment data
         await Payment.updateOne(
-            { transactionId: payload.tran_id },
-            { paymentGatewayData: response.data },
+            { transactionId: data.tran_id },
+            { paymentGatewayData: data },
             { runValidators: true }
         )
     } catch (error: any) {
